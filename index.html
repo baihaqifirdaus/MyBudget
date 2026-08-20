@@ -1,0 +1,821 @@
+<title>MyBudget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700&display=swap">
+
+<style>
+:root {
+  --bg:         #FFFFFF;
+  --bg-card:    #FFFFFF;
+  --bg-input:   #EEF0F4;
+  --text-1:     #16162A;
+  --text-2:     #5C5C78;
+  --text-3:     #9898AA;
+  --accent:     #E8951A;
+  --accent-dim: #FEF3DC;
+  --danger:     #DC2626;
+  --danger-dim: #FEE2E2;
+  --border:     #E8EAF0;
+  --sh:         0 1px 3px rgba(22,22,42,.06), 0 0 0 1px rgba(22,22,42,.05);
+  --sh-md:      0 4px 14px rgba(22,22,42,.08), 0 0 0 1px rgba(22,22,42,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:         #0E0E1A;
+    --bg-card:    #1A1A2E;
+    --bg-input:   #12121E;
+    --text-1:     #F0EFE8;
+    --text-2:     #9898B8;
+    --text-3:     #5C5C78;
+    --accent:     #F59E0B;
+    --accent-dim: #1E1608;
+    --danger:     #F87171;
+    --danger-dim: #1E0808;
+    --border:     #2A2A42;
+    --sh:         0 2px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:         #0E0E1A;
+  --bg-card:    #1A1A2E;
+  --bg-input:   #12121E;
+  --text-1:     #F0EFE8;
+  --text-2:     #9898B8;
+  --text-3:     #5C5C78;
+  --accent:     #F59E0B;
+  --accent-dim: #1E1608;
+  --danger:     #F87171;
+  --danger-dim: #1E0808;
+  --border:     #2A2A42;
+  --sh:         0 2px 12px rgba(0,0,0,.3);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; }
+body { height: 100%; background: var(--bg); color: var(--text-1); font-family: 'Nunito', system-ui, sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
+
+#app {
+  max-width: 430px; margin: 0 auto;
+  height: 100vh; height: 100dvh;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden; background: var(--bg);
+}
+
+.views-container { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+
+.view {
+  position: absolute; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--bg);
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease;
+  padding-bottom: 20px;
+}
+.view.active { opacity: 1; pointer-events: auto; }
+.view::-webkit-scrollbar { width: 3px; }
+.view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  flex-shrink: 0;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-card);
+  box-shadow: 0 -1px 0 var(--border), 0 -4px 16px rgba(22,22,42,.05);
+  display: flex; align-items: center; justify-content: space-around;
+}
+.nav-item {
+  flex: 1; height: 64px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  color: var(--text-3); background: none; border: none; cursor: pointer;
+  transition: color .15s; outline: none;
+}
+.nav-item:focus-visible { outline: 2px solid var(--accent); border-radius: 8px; }
+.nav-item.active { color: var(--accent); }
+.nav-icon { font-size: 22px; line-height: 1; transition: transform .15s; }
+.nav-item.active .nav-icon { transform: scale(1.1); }
+.nav-label { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+
+.nav-add-wrap { flex: 1; display: flex; justify-content: center; align-items: center; }
+.nav-add-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(232,149,26,.38);
+  transition: transform .15s, box-shadow .15s; outline: none; margin-bottom: 8px;
+}
+.nav-add-btn:active { transform: scale(.92); box-shadow: 0 2px 6px rgba(232,149,26,.25); }
+.nav-add-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.nav-add-btn svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+/* ── HOME HEADER ── */
+.home-hdr {
+  background: linear-gradient(155deg, #16162A 0%, #201840 100%);
+  padding: 28px 24px 32px;
+}
+.hdr-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.greet-sub { font-family: 'Outfit', sans-serif; font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 3px; }
+.greet-main { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: #fff; }
+.hdr-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,.1); color: rgba(255,255,255,.65);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; outline: none; transition: background .15s; flex-shrink: 0;
+}
+.hdr-btn:hover { background: rgba(255,255,255,.18); }
+.hdr-btn:focus-visible { outline: 2px solid var(--accent); }
+.hdr-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.budget-section {}
+.budget-lbl { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+.budget-amount { font-family: 'Outfit', sans-serif; font-size: 46px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.budget-amount .cur { font-size: 22px; font-weight: 600; opacity: .55; vertical-align: super; margin-right: 1px; }
+.budget-meta-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 8px; }
+.budget-remaining { font-family: 'Outfit', sans-serif; font-size: 13px; color: rgba(255,255,255,.5); font-variant-numeric: tabular-nums; }
+.budget-pct { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent); }
+.prog-track { background: rgba(255,255,255,.15); border-radius: 99px; height: 4px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width .6s cubic-bezier(.4,0,.2,1); max-width: 100%; }
+.prog-fill.over { background: #F87171; }
+
+/* ── RECENT SECTION ── */
+.sec-hdr { display: flex; align-items: center; justify-content: space-between; padding: 24px 20px 8px; }
+.sec-title { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--text-1); }
+.sec-link { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; outline: none; padding: 0; }
+.sec-link:focus-visible { text-decoration: underline; }
+
+/* ── DAY GROUP LABELS (home) ── */
+.home-day-lbl {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 14px 16px 6px;
+  font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700;
+  color: var(--text-3); text-transform: uppercase; letter-spacing: .1em;
+}
+.home-day-lbl + .tx-list { margin-bottom: 6px; }
+.day-tot { color: var(--accent); font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 800; text-transform: none; letter-spacing: 0; }
+
+/* ── DAILY AVERAGE ── */
+.ana-day-avg { font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--text-3); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.ana-day-avg strong { color: var(--text-2); font-weight: 700; }
+
+/* ── TRANSACTION ITEM ── */
+.tx-list { display: flex; flex-direction: column; gap: 6px; padding: 0 16px; }
+
+.tx-item {
+  background: var(--bg-card); border-radius: 16px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; box-shadow: var(--sh);
+  transition: box-shadow .15s;
+}
+.tx-item:hover { box-shadow: var(--sh-md); }
+.tx-item:active { background: var(--bg-input); box-shadow: var(--sh); }
+
+.tx-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: var(--cat-bg, var(--accent-dim));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 21px; flex-shrink: 0;
+}
+.tx-info { flex: 1; min-width: 0; }
+.tx-cat { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-1); }
+.tx-note { font-size: 13px; color: var(--text-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.tx-amt { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--danger); font-variant-numeric: tabular-nums; }
+.tx-date-lbl { font-family: 'Outfit', sans-serif; font-size: 11px; color: var(--text-3); }
+.tx-del {
+  background: none; border: none; color: var(--text-3);
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; opacity: 0;
+  transition: opacity .15s, color .15s; outline: none;
+}
+.tx-item:hover .tx-del { opacity: 1; }
+.tx-del:hover { color: var(--danger); }
+.tx-del:focus { opacity: 1; }
+.tx-del:focus-visible { outline: 2px solid var(--danger); opacity: 1; }
+.tx-del svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+.empty-state { text-align: center; padding: 52px 24px; }
+.empty-ico { font-size: 48px; opacity: .35; margin-bottom: 14px; }
+.empty-title { font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+.empty-desc { font-size: 14px; color: var(--text-3); line-height: 1.5; }
+
+/* ── ADD / EDIT ── */
+.view-hdr {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 20px 16px; background: var(--bg-card);
+  box-shadow: 0 1px 0 var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.back-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--bg); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2); transition: background .12s; outline: none; flex-shrink: 0;
+}
+.back-btn:hover { background: var(--bg-input); }
+.back-btn:focus-visible { outline: 2px solid var(--accent); }
+.back-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.view-hdr-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-1); }
+
+.amount-zone {
+  background: var(--bg-card); padding: 32px 24px 28px;
+  text-align: center; box-shadow: 0 1px 0 var(--border);
+}
+.amount-lbl { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+.amount-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
+.amount-cur { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 600; color: var(--text-3); }
+.amount-inp {
+  font-family: 'Outfit', sans-serif; font-size: 58px; font-weight: 800; color: var(--text-1);
+  background: none; border: none; outline: none; width: 240px; text-align: center;
+  font-variant-numeric: tabular-nums; letter-spacing: -.03em; caret-color: var(--accent);
+  -moz-appearance: textfield; -webkit-appearance: none;
+}
+.amount-inp::placeholder { color: var(--border); }
+.amount-inp::-webkit-inner-spin-button,
+.amount-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* Category strip — horizontal scroll */
+.cat-scroll-wrap {
+  padding: 20px 0 4px;
+}
+.cat-section-lbl {
+  font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700;
+  color: var(--text-3); text-transform: uppercase; letter-spacing: .1em;
+  padding: 0 20px; margin-bottom: 12px; display: block;
+}
+.cat-strip {
+  display: flex; gap: 8px;
+  padding: 0 20px 4px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.cat-strip::-webkit-scrollbar { display: none; }
+.cat-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 14px 10px; border-radius: 16px;
+  border: 2px solid transparent; background: var(--bg-card);
+  box-shadow: var(--sh);
+  cursor: pointer; transition: border-color .12s, background .12s, box-shadow .12s; outline: none;
+  flex-shrink: 0; min-width: 68px;
+}
+.cat-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cat-btn:active { transform: scale(.95); }
+.cat-btn.sel { border-color: var(--cc); background: color-mix(in srgb, var(--cc) 10%, var(--bg-card)); box-shadow: none; }
+.cat-emoji { font-size: 24px; line-height: 1; }
+.cat-name { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+.cat-btn.sel .cat-name { color: var(--cc); }
+
+/* Form fields */
+.form-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.field-group { display: flex; flex-direction: column; gap: 8px; }
+.field-lbl { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .08em; }
+.txt-inp {
+  width: 100%; background: var(--bg-input); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 14px 16px;
+  font-family: 'Nunito', sans-serif; font-size: 16px; color: var(--text-1);
+  outline: none; transition: border-color .15s; -webkit-appearance: none; appearance: none;
+}
+.txt-inp::placeholder { color: var(--text-3); }
+.txt-inp:focus { border-color: var(--accent); background: var(--bg-card); }
+
+.submit-btn {
+  width: 100%; padding: 16px; background: var(--accent); color: #fff; border: none;
+  border-radius: 16px; font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: opacity .15s, transform .12s; letter-spacing: .02em;
+  outline: none; margin-top: 8px;
+  box-shadow: 0 4px 16px rgba(232,149,26,.32);
+}
+.submit-btn:active { opacity: .9; transform: scale(.99); }
+.submit-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ── HISTORY ── */
+.page-hdr {
+  padding: 20px 20px 14px; background: var(--bg-card);
+  box-shadow: 0 1px 0 var(--border); position: sticky; top: 0; z-index: 10;
+}
+.page-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -.02em; margin-bottom: 12px; }
+.search-wrap { position: relative; }
+.search-ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.search-ico svg { width: 15px; height: 15px; stroke: var(--text-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.search-inp {
+  width: 100%; background: var(--bg-input); border: 1.5px solid var(--border);
+  border-radius: 99px; padding: 10px 16px 10px 40px;
+  font-family: 'Nunito', sans-serif; font-size: 15px; color: var(--text-1);
+  outline: none; transition: border-color .15s; -webkit-appearance: none; appearance: none;
+}
+.search-inp:focus { border-color: var(--accent); }
+
+.date-grp { margin-bottom: 4px; }
+.date-lbl {
+  padding: 18px 20px 8px; font-family: 'Outfit', sans-serif;
+  font-size: 11px; font-weight: 700; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: .1em;
+  display: flex; justify-content: space-between;
+}
+.date-lbl-tot { color: var(--text-2); font-variant-numeric: tabular-nums; }
+
+/* ── ANALYTICS ── */
+.ana-hdr {
+  padding: 20px 20px 14px; background: var(--bg-card);
+  box-shadow: 0 1px 0 var(--border);
+}
+.ana-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -.02em; margin-bottom: 14px; }
+.month-nav { display: flex; align-items: center; gap: 12px; }
+.mo-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text-2); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .12s; outline: none; flex-shrink: 0;
+}
+.mo-btn:hover { background: var(--bg-input); }
+.mo-btn:focus-visible { outline: 2px solid var(--accent); }
+.mo-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.mo-lbl { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-1); flex: 1; text-align: center; }
+
+.ana-total-sec { padding: 28px 20px 16px; }
+.ana-total-lbl { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+.ana-total-amt { font-family: 'Outfit', sans-serif; font-size: 44px; font-weight: 800; color: var(--text-1); font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1.1; }
+.ana-total-amt .cur { font-size: 22px; font-weight: 600; opacity: .5; vertical-align: super; }
+
+.chart-pad { padding: 0 16px 14px; }
+.chart-card { background: var(--bg-card); border-radius: 18px; padding: 20px; box-shadow: var(--sh-md); }
+.chart-title { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 18px; }
+.donut-wrap { display: flex; align-items: center; gap: 18px; }
+.legend { flex: 1; display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.leg-item { display: flex; align-items: center; gap: 8px; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.leg-name { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-1); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leg-pct { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
+
+/* ── SETTINGS MODAL ── */
+.modal-bg { position: absolute; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: none; align-items: flex-end; }
+.modal-bg.open { display: flex; }
+.modal-sheet {
+  background: var(--bg-card); border-radius: 24px 24px 0 0;
+  padding: 24px 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  width: 100%; animation: su .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes su { from { transform: translateY(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-handle { width: 36px; height: 4px; border-radius: 99px; background: var(--border); margin: 0 auto 22px; }
+.modal-title { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: var(--text-1); margin-bottom: 22px; letter-spacing: -.01em; }
+.modal-field { margin-bottom: 16px; }
+.modal-lbl { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; display: block; }
+
+/* ── TOAST ── */
+.toast-box { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 300; pointer-events: none; width: calc(100% - 32px); display: flex; flex-direction: column; gap: 6px; }
+.toast { background: var(--text-1); color: var(--bg); border-radius: 12px; padding: 12px 18px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,.2); animation: tin .2s ease, tout .25s ease 2.1s forwards; }
+@keyframes tin  { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:none; } }
+@keyframes tout { from { opacity:1; } to { opacity:0; transform:translateY(-4px); } }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+</style>
+
+<div id="app">
+  <div class="toast-box" id="toastBox"></div>
+
+  <div class="views-container">
+
+    <!-- HOME -->
+    <div class="view active" id="view-home">
+      <div class="home-hdr">
+        <div class="hdr-top">
+          <div>
+            <div class="greet-sub" id="greetSub">Good morning</div>
+            <div class="greet-main">My Finances</div>
+          </div>
+          <button class="hdr-btn" onclick="openSettings()" aria-label="Settings">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+        <div class="budget-section">
+          <div class="budget-lbl">Spent this month</div>
+          <div class="budget-amount"><span class="cur" id="homeCur">$</span><span id="homeMonthAmt">0.00</span></div>
+          <div class="budget-meta-row">
+            <div class="budget-remaining" id="homeRemaining">$0.00 remaining</div>
+            <div class="budget-pct" id="homePct">0%</div>
+          </div>
+          <div class="prog-track"><div class="prog-fill" id="homeBar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="sec-hdr">
+        <div class="sec-title">Expenses</div>
+        <button class="sec-link" onclick="nav('history')">See all</button>
+      </div>
+      <div id="homeContent"></div>
+    </div>
+
+    <!-- ADD -->
+    <div class="view" id="view-add">
+      <div class="view-hdr">
+        <button class="back-btn" onclick="nav('home')" aria-label="Back">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="view-hdr-title" id="addTitle">New Expense</div>
+      </div>
+
+      <div class="amount-zone">
+        <div class="amount-lbl">Amount</div>
+        <div class="amount-row">
+          <span class="amount-cur" id="addCurSym">$</span>
+          <input type="number" id="amtInp" class="amount-inp" placeholder="0.00" min="0" step="0.01" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="cat-scroll-wrap">
+        <span class="cat-section-lbl">Category</span>
+        <div class="cat-strip" id="catStrip"></div>
+      </div>
+
+      <div class="form-body">
+        <div class="field-group">
+          <label class="field-lbl" for="noteInp">Note</label>
+          <input type="text" id="noteInp" class="txt-inp" placeholder="What was this for?" maxlength="80">
+        </div>
+        <div class="field-group">
+          <label class="field-lbl" for="dateInp">Date</label>
+          <input type="date" id="dateInp" class="txt-inp">
+        </div>
+        <button class="submit-btn" id="submitBtn" onclick="submitExpense()">Add Expense</button>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="view" id="view-history">
+      <div class="page-hdr">
+        <div class="page-title">History</div>
+        <div class="search-wrap">
+          <div class="search-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <input type="search" id="searchInp" class="search-inp" placeholder="Search expenses…" oninput="renderHistory()">
+        </div>
+      </div>
+      <div id="histContent"></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="view" id="view-analytics">
+      <div class="ana-hdr">
+        <div class="ana-title">Analytics</div>
+        <div class="month-nav">
+          <button class="mo-btn" onclick="shiftMonth(-1)" aria-label="Previous month"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="mo-lbl" id="moLbl">August 2026</div>
+          <button class="mo-btn" onclick="shiftMonth(1)" aria-label="Next month"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+      </div>
+
+      <div class="ana-total-sec">
+        <div class="ana-total-lbl">Total spent</div>
+        <div class="ana-total-amt"><span class="cur" id="anaCur">$</span><span id="anaAmt">0.00</span></div>
+        <div class="ana-day-avg" id="anaDailyAvg"></div>
+      </div>
+
+      <div class="chart-pad">
+        <div class="chart-card">
+          <div class="chart-title">By Category</div>
+          <div class="donut-wrap">
+            <canvas id="donutC" style="width:130px;height:130px;flex-shrink:0;display:block;"></canvas>
+            <div class="legend" id="donutLeg"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-pad" style="padding-top:0">
+        <div class="chart-card">
+          <div class="chart-title">6-Month Trend</div>
+          <canvas id="barC" style="width:100%;height:150px;display:block;"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /views-container -->
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nb-home" onclick="nav('home')" aria-label="Home">
+      <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" id="nb-history" onclick="nav('history')" aria-label="History">
+      <span class="nav-icon">📋</span><span class="nav-label">History</span>
+    </button>
+    <div class="nav-add-wrap">
+      <button class="nav-add-btn" onclick="nav('add')" aria-label="Add expense">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <button class="nav-item" id="nb-analytics" onclick="nav('analytics')" aria-label="Analytics">
+      <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+    </button>
+    <button class="nav-item" onclick="openSettings()" aria-label="Settings">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+  <!-- SETTINGS -->
+  <div class="modal-bg" id="settModal" onclick="closeSettings(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Settings</div>
+      <div class="modal-field">
+        <label class="modal-lbl" for="budgetInp">Monthly Budget</label>
+        <input type="number" id="budgetInp" class="txt-inp" placeholder="3000" min="0" step="10" inputmode="decimal">
+      </div>
+      <div class="modal-field">
+        <label class="modal-lbl" for="curInp">Currency Symbol</label>
+        <input type="text" id="curInp" class="txt-inp" placeholder="$" maxlength="3">
+      </div>
+      <button class="submit-btn" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  let m = document.querySelector('meta[name="viewport"]');
+  if (!m) { m = document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+  m.content = 'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+})();
+
+const CATS = [
+  {id:'food',      lbl:'Food',      ico:'🍔', clr:'#F97316'},
+  {id:'transport', lbl:'Transport', ico:'🚗', clr:'#3B82F6'},
+  {id:'shopping',  lbl:'Shopping',  ico:'🛍️', clr:'#EC4899'},
+  {id:'housing',   lbl:'Housing',   ico:'🏠', clr:'#8B5CF6'},
+  {id:'health',    lbl:'Health',    ico:'💊', clr:'#10B981'},
+  {id:'fun',       lbl:'Fun',       ico:'🎬', clr:'#F59E0B'},
+  {id:'education', lbl:'Learn',     ico:'📚', clr:'#06B6D4'},
+  {id:'travel',    lbl:'Travel',    ico:'✈️', clr:'#6366F1'},
+  {id:'utilities', lbl:'Bills',     ico:'💡', clr:'#84CC16'},
+  {id:'other',     lbl:'Other',     ico:'💰', clr:'#9CA3AF'},
+];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MO_S   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const S = {
+  expenses:[], settings:{budget:3000,cur:'$'},
+  view:'home', editId:null, selCat:'food',
+  anaM:new Date().getMonth(), anaY:new Date().getFullYear(),
+};
+
+function load() {
+  try { const d=JSON.parse(localStorage.getItem('mb_v2')||'{}'); if(d.expenses)S.expenses=d.expenses; if(d.settings)S.settings={...S.settings,...d.settings}; } catch(e){}
+}
+function save() {
+  try { localStorage.setItem('mb_v2',JSON.stringify({expenses:S.expenses,settings:S.settings})); } catch(e){}
+}
+
+function fmt(n){ return (S.settings.cur||'$')+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function todayStr(){ return dtStr(new Date()); }
+function dtStr(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtDate(s){
+  const t=todayStr(), yd=dtStr(new Date(Date.now()-86400000));
+  if(s===t)return 'Today'; if(s===yd)return 'Yesterday';
+  return new Date(s+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+function cat(id){ return CATS.find(c=>c.id===id)||CATS[CATS.length-1]; }
+function hex2rgb(h){ return {r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)}; }
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function toast(msg){
+  const b=document.getElementById('toastBox'), t=document.createElement('div');
+  t.className='toast'; t.textContent=msg; b.appendChild(t); setTimeout(()=>t.remove(),2500);
+}
+
+function nav(v, editId) {
+  if(v==='add'){ S.editId=editId||null; if(!editId)S.selCat='food'; }
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nb-'+v); if(nb)nb.classList.add('active');
+  S.view=v;
+  if(v==='home') renderHome();
+  else if(v==='add') initAdd(editId);
+  else if(v==='history') renderHistory();
+  else if(v==='analytics') renderAna();
+}
+
+/* ── HOME ── */
+function renderHome(){
+  const now=new Date(), h=now.getHours();
+  document.getElementById('greetSub').textContent = h<5?'Good night':h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const sym=S.settings.cur||'$';
+  document.getElementById('homeCur').textContent = sym;
+  document.getElementById('addCurSym').textContent = sym;
+
+  const mExp=S.expenses.filter(e=>{ const d=new Date(e.date+'T00:00:00'); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); });
+  const mTot=mExp.reduce((s,e)=>s+e.amount,0);
+  document.getElementById('homeMonthAmt').textContent=mTot.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+
+  const bgt=S.settings.budget||0;
+  const pct=bgt>0?Math.min(mTot/bgt*100,100):0;
+  const left=Math.max(bgt-mTot,0);
+  document.getElementById('homeRemaining').textContent=`${sym}${left.toLocaleString('en-US',{minimumFractionDigits:2})} remaining`;
+  document.getElementById('homePct').textContent=Math.round(pct)+'%';
+  const bar=document.getElementById('homeBar');
+  bar.style.width=pct+'%'; bar.classList.toggle('over',mTot>bgt&&bgt>0);
+
+  const recent=[...S.expenses].sort((a,b)=>b.createdAt-a.createdAt).slice(0,12);
+  const t=todayStr();
+  const todayExps=recent.filter(e=>e.date===t);
+  const earlierExps=recent.filter(e=>e.date!==t);
+  const todayTot=todayExps.reduce((s,e)=>s+e.amount,0);
+
+  const el=document.getElementById('homeContent');
+  if(!recent.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">💳</div><div class="empty-title">No expenses yet</div><div class="empty-desc">Tap + below to add your first expense.</div></div>`;
+  } else {
+    let html='';
+    if(todayExps.length){
+      html+=`<div class="home-day-lbl"><span>Today</span><span class="day-tot">${fmt(todayTot)}</span></div>`;
+      html+=`<div class="tx-list">${todayExps.map(txItem).join('')}</div>`;
+    }
+    if(earlierExps.length){
+      html+=`<div class="home-day-lbl" style="margin-top:${todayExps.length?'8px':'0'}"><span>Earlier</span></div>`;
+      html+=`<div class="tx-list">${earlierExps.map(txItem).join('')}</div>`;
+    }
+    el.innerHTML=html;
+  }
+}
+
+function txItem(e){
+  const c=cat(e.category), {r,g,b}=hex2rgb(c.clr);
+  return `<div class="tx-item" onclick="nav('add','${e.id}')">
+    <div class="tx-icon" style="background:rgba(${r},${g},${b},.12)">${c.ico}</div>
+    <div class="tx-info">
+      <div class="tx-cat">${c.lbl}</div>
+      ${e.note?`<div class="tx-note">${e.note}</div>`:''}
+    </div>
+    <div class="tx-right">
+      <div class="tx-amt">-${fmt(e.amount)}</div>
+      <div class="tx-date-lbl">${fmtDate(e.date)}</div>
+    </div>
+    <button class="tx-del" onclick="delExp(event,'${e.id}')" aria-label="Delete">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>`;
+}
+
+function delExp(ev,id){
+  ev.stopPropagation();
+  S.expenses=S.expenses.filter(e=>e.id!==id); save();
+  if(S.view==='home')renderHome(); if(S.view==='history')renderHistory();
+  toast('Expense deleted');
+}
+
+/* ── ADD / EDIT ── */
+function initAdd(editId){
+  const isEdit=!!editId;
+  document.getElementById('addTitle').textContent=isEdit?'Edit Expense':'New Expense';
+  document.getElementById('submitBtn').textContent=isEdit?'Save Changes':'Add Expense';
+  document.getElementById('addCurSym').textContent=S.settings.cur||'$';
+
+  document.getElementById('catStrip').innerHTML=CATS.map(c=>
+    `<button class="cat-btn${c.id===S.selCat?' sel':''}" style="--cc:${c.clr}" onclick="selCat('${c.id}')" data-id="${c.id}" aria-label="${c.lbl}">
+      <span class="cat-emoji">${c.ico}</span><span class="cat-name">${c.lbl}</span>
+    </button>`).join('');
+
+  if(isEdit){
+    const exp=S.expenses.find(e=>e.id===editId);
+    if(exp){ document.getElementById('amtInp').value=exp.amount; document.getElementById('noteInp').value=exp.note||''; document.getElementById('dateInp').value=exp.date; selCat(exp.category); }
+  } else {
+    document.getElementById('amtInp').value=''; document.getElementById('noteInp').value=''; document.getElementById('dateInp').value=todayStr(); selCat(S.selCat);
+  }
+  setTimeout(()=>document.getElementById('amtInp').focus(),200);
+}
+
+function selCat(id){
+  S.selCat=id;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.id===id));
+  // Scroll selected into view
+  const sel=document.querySelector('.cat-btn.sel');
+  if(sel)sel.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
+
+function submitExpense(){
+  const amt=parseFloat(document.getElementById('amtInp').value);
+  const note=document.getElementById('noteInp').value.trim();
+  const date=document.getElementById('dateInp').value;
+  if(!amt||amt<=0){ toast('Please enter a valid amount'); return; }
+  if(!date){ toast('Please select a date'); return; }
+  if(S.editId){
+    const i=S.expenses.findIndex(e=>e.id===S.editId);
+    if(i>=0)S.expenses[i]={...S.expenses[i],amount:amt,note,date,category:S.selCat};
+    toast('Expense updated');
+  } else {
+    S.expenses.push({id:Date.now().toString(),amount:amt,note,date,category:S.selCat,createdAt:Date.now()});
+    toast('Expense added');
+  }
+  save(); S.editId=null; nav('home');
+}
+
+/* ── HISTORY ── */
+function renderHistory(){
+  const q=(document.getElementById('searchInp')?.value||'').toLowerCase();
+  let list=[...S.expenses].sort((a,b)=>b.createdAt-a.createdAt);
+  if(q)list=list.filter(e=>{ const c=cat(e.category); return c.lbl.toLowerCase().includes(q)||(e.note||'').toLowerCase().includes(q)||String(e.amount).includes(q); });
+  const el=document.getElementById('histContent');
+  if(!list.length){ el.innerHTML=`<div class="empty-state"><div class="empty-ico">${q?'🔍':'📋'}</div><div class="empty-title">${q?'No results':'No expenses yet'}</div><div class="empty-desc">${q?'Try a different search.':'Tap + to start tracking.'}</div></div>`; return; }
+  const grps={};
+  list.forEach(e=>{ (grps[e.date]||(grps[e.date]=[])).push(e); });
+  el.innerHTML=Object.keys(grps).sort((a,b)=>b.localeCompare(a)).map(d=>`
+    <div class="date-grp">
+      <div class="date-lbl"><span>${fmtDate(d)}</span><span class="date-lbl-tot">${fmt(grps[d].reduce((s,e)=>s+e.amount,0))}</span></div>
+      <div class="tx-list">${grps[d].map(txItem).join('')}</div>
+    </div>`).join('');
+}
+
+/* ── ANALYTICS ── */
+function shiftMonth(d){ let m=S.anaM+d,y=S.anaY; if(m<0){m=11;y--;} if(m>11){m=0;y++;} S.anaM=m;S.anaY=y;renderAna(); }
+
+function renderAna(){
+  const m=S.anaM,y=S.anaY;
+  document.getElementById('moLbl').textContent=`${MONTHS[m]} ${y}`;
+  document.getElementById('anaCur').textContent=S.settings.cur||'$';
+  const exps=S.expenses.filter(e=>{ const d=new Date(e.date+'T00:00:00'); return d.getMonth()===m&&d.getFullYear()===y; });
+  const total=exps.reduce((s,e)=>s+e.amount,0);
+  document.getElementById('anaAmt').textContent=total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  // Daily average: days elapsed in month (or full month if past)
+  const now2=new Date(), isCurrentMonth=(m===now2.getMonth()&&y===now2.getFullYear());
+  const daysElapsed=isCurrentMonth?now2.getDate():new Date(y,m+1,0).getDate();
+  const uniqueDays=new Set(exps.map(e=>e.date)).size;
+  const avgEl=document.getElementById('anaDailyAvg');
+  if(total>0&&daysElapsed>0){
+    avgEl.innerHTML=`Daily avg: <strong>${fmt(total/daysElapsed)}</strong> &nbsp;·&nbsp; ${uniqueDays} day${uniqueDays!==1?'s':''} with expenses`;
+  } else { avgEl.textContent=''; }
+  const byCat={};
+  exps.forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+e.amount; });
+  const catData=Object.entries(byCat).map(([id,amt])=>({...cat(id),amt})).sort((a,b)=>b.amt-a.amt);
+  drawDonut(catData,total);
+  drawBars(m,y);
+}
+
+function drawDonut(catData,total){
+  const cv=document.getElementById('donutC');
+  const dpr=window.devicePixelRatio||1;
+  cv.width=130*dpr; cv.height=130*dpr;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  const cx=65,cy=65,outerR=60,innerR=36;
+  ctx.clearRect(0,0,130,130);
+  if(!catData.length||!total){
+    ctx.beginPath();ctx.arc(cx,cy,outerR,0,Math.PI*2);
+    ctx.strokeStyle=cssVar('--border');ctx.lineWidth=outerR-innerR;ctx.stroke();
+    document.getElementById('donutLeg').innerHTML='<div style="font-family:Outfit,sans-serif;font-size:13px;color:var(--text-3)">No data this month</div>';
+    return;
+  }
+  let start=-Math.PI/2; const GAP=.03;
+  catData.forEach(c=>{ const sw=c.amt/total*Math.PI*2-GAP; if(sw<=0)return; ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,outerR,start,start+sw);ctx.closePath();ctx.fillStyle=c.clr;ctx.fill();start+=sw+GAP; });
+  ctx.beginPath();ctx.arc(cx,cy,innerR,0,Math.PI*2);ctx.fillStyle=cssVar('--bg-card');ctx.fill();
+  document.getElementById('donutLeg').innerHTML=catData.slice(0,5).map(c=>
+    `<div class="leg-item"><div class="leg-dot" style="background:${c.clr}"></div><div class="leg-name">${c.lbl}</div><div class="leg-pct">${Math.round(c.amt/total*100)}%</div></div>`
+  ).join('')+(catData.length>5?`<div style="font-size:12px;color:var(--text-3);font-family:Outfit,sans-serif;margin-top:4px">+${catData.length-5} more</div>`:'');
+}
+
+function drawBars(curM,curY){
+  const cv=document.getElementById('barC');
+  const rect=cv.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const W=rect.width||300,H=150;
+  cv.width=W*dpr;cv.height=H*dpr;
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  const months=[];
+  for(let i=5;i>=0;i--){let mo=curM-i,yr=curY;while(mo<0){mo+=12;yr--;}months.push({m:mo,y:yr});}
+  const tots=months.map(({m,y})=>S.expenses.filter(e=>{const d=new Date(e.date+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===y;}).reduce((s,e)=>s+e.amount,0));
+  const maxV=Math.max(...tots,1);
+  const accent=cssVar('--accent'),t3=cssVar('--text-3'),brd=cssVar('--border');
+  const pL=6,pR=6,pT=10,pB=28,cW=W-pL-pR,cH=H-pT-pB,slot=cW/months.length;
+  ctx.strokeStyle=brd;ctx.lineWidth=1;
+  [0,.5,1].forEach(f=>{const yp=pT+cH-f*cH;ctx.beginPath();ctx.moveTo(pL,yp);ctx.lineTo(W-pR,yp);ctx.stroke();});
+  months.forEach(({m,y},i)=>{
+    const isCur=m===curM&&y===curY;
+    const bW=slot*.42,x=pL+slot*i+slot/2,bH=tots[i]/maxV*cH,by=pT+cH-bH,bx=x-bW/2,r=4;
+    ctx.fillStyle=isCur?accent:(accent+'66');
+    ctx.beginPath();ctx.moveTo(bx+r,by);ctx.lineTo(bx+bW-r,by);ctx.arcTo(bx+bW,by,bx+bW,by+r,r);ctx.lineTo(bx+bW,pT+cH);ctx.lineTo(bx,pT+cH);ctx.arcTo(bx,by,bx+r,by,r);ctx.closePath();ctx.fill();
+    ctx.fillStyle=isCur?accent:t3;ctx.font=`${isCur?700:500} 10px Outfit,sans-serif`;ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(MO_S[m],x,H-pB+5);
+  });
+}
+
+/* ── SETTINGS ── */
+function openSettings(){ document.getElementById('budgetInp').value=S.settings.budget||''; document.getElementById('curInp').value=S.settings.cur||'$'; document.getElementById('settModal').classList.add('open'); }
+function closeSettings(ev){ if(ev.target===document.getElementById('settModal'))document.getElementById('settModal').classList.remove('open'); }
+function saveSettings(){
+  const budget=parseFloat(document.getElementById('budgetInp').value)||3000;
+  const cur=document.getElementById('curInp').value.trim()||'$';
+  S.settings={budget,cur};save();
+  document.getElementById('settModal').classList.remove('open');
+  toast('Settings saved');
+  if(S.view==='home')renderHome();
+}
+
+/* ── INIT ── */
+load();
+if(!S.expenses.length){
+  const t=todayStr(),y1=dtStr(new Date(Date.now()-86400000)),y2=dtStr(new Date(Date.now()-2*86400000));
+  S.expenses=[
+    {id:'1',amount:12.50,note:'Lunch at cafe',    category:'food',     date:t, createdAt:Date.now()-3600000},
+    {id:'2',amount:3.20, note:'Bus pass',          category:'transport',date:t, createdAt:Date.now()-7200000},
+    {id:'3',amount:45.00,note:'Groceries',         category:'shopping', date:y1,createdAt:Date.now()-90000000},
+    {id:'4',amount:9.99, note:'Streaming service', category:'fun',      date:y1,createdAt:Date.now()-100000000},
+    {id:'5',amount:120.0,note:'Electric bill',     category:'utilities',date:y2,createdAt:Date.now()-200000000},
+    {id:'6',amount:28.75,note:'Dinner out',        category:'food',     date:y2,createdAt:Date.now()-210000000},
+  ];
+  save();
+}
+renderHome();
+</script>
