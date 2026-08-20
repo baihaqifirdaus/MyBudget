@@ -524,10 +524,10 @@ const S = {
 };
 
 function load() {
-  try { const d=JSON.parse(localStorage.getItem('mb_v2')||'{}'); if(d.expenses)S.expenses=d.expenses; if(d.settings)S.settings={...S.settings,...d.settings}; } catch(e){}
+  try { const d=JSON.parse(localStorage.getItem('mb_v3')||'{}'); if(d.expenses)S.expenses=d.expenses; if(d.settings)S.settings={...S.settings,...d.settings}; } catch(e){}
 }
 function save() {
-  try { localStorage.setItem('mb_v2',JSON.stringify({expenses:S.expenses,settings:S.settings})); } catch(e){}
+  try { localStorage.setItem('mb_v3',JSON.stringify({expenses:S.expenses,settings:S.settings})); } catch(e){}
 }
 
 function fmt(n){ return (S.settings.cur||'RM')+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
