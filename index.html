@@ -488,7 +488,7 @@ body { height: 100%; background: var(--bg); color: var(--text-1); font-family: '
       </div>
       <div class="modal-field">
         <label class="modal-lbl" for="curInp">Currency Symbol</label>
-        <input type="text" id="curInp" class="txt-inp" placeholder="$" maxlength="3">
+        <input type="text" id="curInp" class="txt-inp" placeholder="RM" maxlength="3">
       </div>
       <button class="submit-btn" onclick="saveSettings()">Save Settings</button>
     </div>
@@ -518,7 +518,7 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 const MO_S   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const S = {
-  expenses:[], settings:{budget:3000,cur:'$'},
+  expenses:[], settings:{budget:3000,cur:'RM'},
   view:'home', editId:null, selCat:'food',
   anaM:new Date().getMonth(), anaY:new Date().getFullYear(),
 };
@@ -530,7 +530,7 @@ function save() {
   try { localStorage.setItem('mb_v2',JSON.stringify({expenses:S.expenses,settings:S.settings})); } catch(e){}
 }
 
-function fmt(n){ return (S.settings.cur||'$')+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmt(n){ return (S.settings.cur||'RM')+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
 function todayStr(){ return dtStr(new Date()); }
 function dtStr(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function fmtDate(s){
@@ -563,7 +563,7 @@ function nav(v, editId) {
 function renderHome(){
   const now=new Date(), h=now.getHours();
   document.getElementById('greetSub').textContent = h<5?'Good night':h<12?'Good morning':h<17?'Good afternoon':'Good evening';
-  const sym=S.settings.cur||'$';
+  const sym=S.settings.cur||'RM';
   document.getElementById('homeCur').textContent = sym;
   document.getElementById('addCurSym').textContent = sym;
 
@@ -632,7 +632,7 @@ function initAdd(editId){
   const isEdit=!!editId;
   document.getElementById('addTitle').textContent=isEdit?'Edit Expense':'New Expense';
   document.getElementById('submitBtn').textContent=isEdit?'Save Changes':'Add Expense';
-  document.getElementById('addCurSym').textContent=S.settings.cur||'$';
+  document.getElementById('addCurSym').textContent=S.settings.cur||'RM';
 
   document.getElementById('catStrip').innerHTML=CATS.map(c=>
     `<button class="cat-btn${c.id===S.selCat?' sel':''}" style="--cc:${c.clr}" onclick="selCat('${c.id}')" data-id="${c.id}" aria-label="${c.lbl}">
@@ -695,7 +695,7 @@ function shiftMonth(d){ let m=S.anaM+d,y=S.anaY; if(m<0){m=11;y--;} if(m>11){m=0
 function renderAna(){
   const m=S.anaM,y=S.anaY;
   document.getElementById('moLbl').textContent=`${MONTHS[m]} ${y}`;
-  document.getElementById('anaCur').textContent=S.settings.cur||'$';
+  document.getElementById('anaCur').textContent=S.settings.cur||'RM';
   const exps=S.expenses.filter(e=>{ const d=new Date(e.date+'T00:00:00'); return d.getMonth()===m&&d.getFullYear()===y; });
   const total=exps.reduce((s,e)=>s+e.amount,0);
   document.getElementById('anaAmt').textContent=total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
@@ -762,11 +762,11 @@ function drawBars(curM,curY){
 }
 
 /* ── SETTINGS ── */
-function openSettings(){ document.getElementById('budgetInp').value=S.settings.budget||''; document.getElementById('curInp').value=S.settings.cur||'$'; document.getElementById('settModal').classList.add('open'); }
+function openSettings(){ document.getElementById('budgetInp').value=S.settings.budget||''; document.getElementById('curInp').value=S.settings.cur||'RM'; document.getElementById('settModal').classList.add('open'); }
 function closeSettings(ev){ if(ev.target===document.getElementById('settModal'))document.getElementById('settModal').classList.remove('open'); }
 function saveSettings(){
   const budget=parseFloat(document.getElementById('budgetInp').value)||3000;
-  const cur=document.getElementById('curInp').value.trim()||'$';
+  const cur=document.getElementById('curInp').value.trim()||'RM';
   S.settings={budget,cur};save();
   document.getElementById('settModal').classList.remove('open');
   toast('Settings saved');
