@@ -19,36 +19,6 @@
   --sh:         0 1px 3px rgba(22,22,42,.06), 0 0 0 1px rgba(22,22,42,.05);
   --sh-md:      0 4px 14px rgba(22,22,42,.08), 0 0 0 1px rgba(22,22,42,.04);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg:         #0E0E1A;
-    --bg-card:    #1A1A2E;
-    --bg-input:   #12121E;
-    --text-1:     #F0EFE8;
-    --text-2:     #9898B8;
-    --text-3:     #5C5C78;
-    --accent:     #F59E0B;
-    --accent-dim: #1E1608;
-    --danger:     #F87171;
-    --danger-dim: #1E0808;
-    --border:     #2A2A42;
-    --sh:         0 2px 12px rgba(0,0,0,.3);
-  }
-}
-:root[data-theme="dark"] {
-  --bg:         #0E0E1A;
-  --bg-card:    #1A1A2E;
-  --bg-input:   #12121E;
-  --text-1:     #F0EFE8;
-  --text-2:     #9898B8;
-  --text-3:     #5C5C78;
-  --accent:     #F59E0B;
-  --accent-dim: #1E1608;
-  --danger:     #F87171;
-  --danger-dim: #1E0808;
-  --border:     #2A2A42;
-  --sh:         0 2px 12px rgba(0,0,0,.3);
-}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { height: 100%; }
@@ -805,17 +775,5 @@ function saveSettings(){
 
 /* ── INIT ── */
 load();
-if(!S.expenses.length){
-  const t=todayStr(),y1=dtStr(new Date(Date.now()-86400000)),y2=dtStr(new Date(Date.now()-2*86400000));
-  S.expenses=[
-    {id:'1',amount:12.50,note:'Lunch at cafe',    category:'food',     date:t, createdAt:Date.now()-3600000},
-    {id:'2',amount:3.20, note:'Bus pass',          category:'transport',date:t, createdAt:Date.now()-7200000},
-    {id:'3',amount:45.00,note:'Groceries',         category:'shopping', date:y1,createdAt:Date.now()-90000000},
-    {id:'4',amount:9.99, note:'Streaming service', category:'fun',      date:y1,createdAt:Date.now()-100000000},
-    {id:'5',amount:120.0,note:'Electric bill',     category:'utilities',date:y2,createdAt:Date.now()-200000000},
-    {id:'6',amount:28.75,note:'Dinner out',        category:'food',     date:y2,createdAt:Date.now()-210000000},
-  ];
-  save();
-}
 renderHome();
 </script>
